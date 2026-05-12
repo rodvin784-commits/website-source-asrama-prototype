@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>TITIP ASRAMA • Detail Per Kelas</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: clamp(8px, 2vw, 24px);
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 90vh;
+      transition: max-width 0.3s ease;
+    }
+
+    @media (min-width: 768px) {
+      .app-container {
+        max-width: 780px;
+      }
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      padding: clamp(16px, 4vw, 32px) clamp(12px, 3vw, 28px);
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      overflow-y: auto;
+    }
+    .screen.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    /* Login */
+    .login-header {
+      text-align: center;
+      margin: 10% 0 6%;
+    }
+    .logo-icon {
+      font-size: clamp(40px, 10vw, 64px);
+      color: #1e4a6b;
+      margin-bottom: 8px;
+    }
+    .app-title {
+      font-size: clamp(24px, 6vw, 32px);
+      font-weight: 700;
+      color: #0b2b3f;
+      letter-spacing: -0.5px;
+    }
+    .app-subtitle {
+      font-size: clamp(13px, 3vw, 16px);
+      color: #5f7d92;
+      margin-top: 4px;
+    }
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 0 4px;
+    }
+    .input-group {
+      display: flex;
+      align-items: center;
+      background: #f2f6fa;
+      border-radius: 14px;
+      padding: 0 16px;
+      border: 1px solid #e2e8f0;
+    }
+    .input-group i {
+      color: #7b9bb4;
+      font-size: clamp(16px, 4vw, 20px);
+      width: 24px;
+    }
+    .input-group input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: clamp(14px, 3vw, 18px) 8px;
+      font-size: clamp(15px, 3.5vw, 17px);
+      outline: none;
+    }
+    .btn {
+      border: none;
+      border-radius: 14px;
+      padding: clamp(14px, 3vw, 18px);
+      font-size: clamp(15px, 3.5vw, 17px);
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: 0.2s;
+      background: #1e4a6b;
+      color: white;
+      width: 100%;
+    }
+    .btn:active {
+      transform: scale(0.97);
+      opacity: 0.9;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid #1e4a6b;
+      color: #1e4a6b;
+      width: auto;
+    }
+    .btn-danger { background: #b91c1c; }
+    .btn-success { background: #0f6b3b; }
+    .btn-laporan {
+      background: #f59e0b;
+      color: #0b2b3f;
+      margin-top: 12px;
+    }
+
+    /* Dashboard */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .greeting {
+      font-weight: 700;
+      font-size: clamp(18px, 5vw, 22px);
+      color: #0b2b3f;
+    }
+    .avatar {
+      background: #dce9f3;
+      width: clamp(38px, 8vw, 46px);
+      height: clamp(38px, 8vw, 46px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(16px, 4vw, 20px);
+      color: #1e4a6b;
+    }
+
+    .status-card {
+      background: #e7f0f8;
+      border-radius: 18px;
+      padding: clamp(14px, 3vw, 20px);
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 16px;
+    }
+    .stat-number {
+      font-size: clamp(26px, 7vw, 32px);
+      font-weight: 700;
+      color: #0b2b3f;
+    }
+    .stat-label {
+      font-size: clamp(11px, 2.5vw, 13px);
+      color: #5f7d92;
+    }
+
+    /* Kartu kelas (bisa diklik) */
+    .kelas-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .kelas-card {
+      background: #f8fafd;
+      border: 1px solid #e9eff4;
+      border-radius: 16px;
+      padding: 12px 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .kelas-card:active {
+      background: #e7f0f8;
+    }
+    .kelas-card .kelas-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e3b4f;
+      margin-bottom: 4px;
+    }
+    .kelas-card .kelas-progress {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e4a6b;
+    }
+    .kelas-card .kelas-total {
+      font-size: 11px;
+      color: #7b9bb4;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    @media (min-width: 768px) {
+      .menu-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    .menu-card {
+      background: #f8fafd;
+      border: 1px solid #e9eff4;
+      border-radius: 18px;
+      padding: clamp(16px, 4vw, 24px) 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .menu-card:active {
+      background: #e7f0f8;
+    }
+    .menu-card i {
+      font-size: clamp(28px, 7vw, 36px);
+      color: #1e4a6b;
+      margin-bottom: 6px;
+    }
+    .menu-card .label {
+      font-weight: 600;
+      font-size: clamp(13px, 3vw, 16px);
+      color: #1a2e3f;
+    }
+    .recent-activity {
+      background: #f9fbfd;
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .recent-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #1e3b4f;
+      font-size: clamp(14px, 3.5vw, 16px);
+    }
+    .activity-item {
+      display: flex;
+      justify-content: space-between;
+      font-size: clamp(12px, 2.8vw, 14px);
+      padding: 6px 0;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    /* Scan screen */
+    .scan-area {
+      background: #0b1e2b;
+      border-radius: 20px;
+      padding: clamp(18px, 4vw, 28px);
+      text-align: center;
+      color: white;
+      margin: 12px 0 20px;
+    }
+    .scan-frame {
+      border: 2px dashed #5f9ea0;
+      border-radius: 16px;
+      padding: clamp(20px, 5vw, 30px) 16px;
+      margin: 10px 0;
+    }
+    .scan-frame i {
+      font-size: clamp(40px, 10vw, 56px);
+      color: #8ecae6;
+    }
+    .manual-input {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .manual-input input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      font-size: clamp(14px, 3vw, 16px);
+    }
+    .result-box {
+      background: #f0f6fa;
+      border-radius: 16px;
+      padding: 16px;
+      margin: 12px 0;
+      display: none;
+      font-size: clamp(14px, 3vw, 16px);
+    }
+    .result-box.show {
+      display: block;
+    }
+
+    /* Detail kelas */
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .detail-title {
+      font-weight: 700;
+      font-size: clamp(20px, 5vw, 24px);
+      color: #0b2b3f;
+    }
+    .santri-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .santri-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #f9fbfd;
+      border-radius: 14px;
+      padding: 12px;
+      border: 1px solid #edf2f7;
+    }
+    .status-icon {
+      font-size: 22px;
+      width: 36px;
+      text-align: center;
+    }
+    .status-icon.sudah {
+      color: #0f6b3b;
+    }
+    .status-icon.belum {
+      color: #b91c1c;
+    }
+    .santri-info {
+      flex: 1;
+    }
+    .santri-nama {
+      font-weight: 600;
+      font-size: clamp(14px, 3.5vw, 16px);
+    }
+    .santri-detail {
+      font-size: 12px;
+      color: #6b7f8f;
+    }
+    .santri-waktu {
+      font-size: 12px;
+      font-weight: 500;
+      color: #1e4a6b;
+    }
+
+    /* Riwayat */
+    .riwayat-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      flex: 1;
+      min-width: 60px;
+      padding: 8px 6px;
+      border-radius: 20px;
+      border: 1px solid #cfdee9;
+      background: white;
+      font-size: clamp(11px, 2.5vw, 13px);
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+    }
+    .filter-btn.active {
+      background: #1e4a6b;
+      color: white;
+      border-color: #1e4a6b;
+    }
+    .log-list {
+      list-style: none;
+    }
+    .log-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eef3f8;
+      font-size: clamp(12px, 3vw, 15px);
+    }
+    .log-icon {
+      width: clamp(30px, 7vw, 36px);
+      height: clamp(30px, 7vw, 36px);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(14px, 3.5vw, 18px);
+      flex-shrink: 0;
+    }
+    .log-icon.titip { background: #dbeafe; color: #1e4a6b; }
+    .log-icon.ambil { background: #dcfce7; color: #0f6b3b; }
+
+    .bottom-nav {
+      display: flex;
+      border-top: 1px solid #e2e8f0;
+      margin-top: auto;
+      padding-top: 8px;
+    }
+    .nav-item {
+      flex: 1;
+      text-align: center;
+      padding: 8px 0;
+      color: #7b9bb4;
+      font-size: clamp(11px, 2.5vw, 13px);
+      cursor: pointer;
+    }
+    .nav-item i {
+      font-size: clamp(18px, 5vw, 22px);
+      display: block;
+      margin-bottom: 2px;
+    }
+    .nav-item.active {
+      color: #1e4a6b;
+      font-weight: 600;
+    }
+    @media (min-width: 768px) {
+      .bottom-nav {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- LOGIN -->
+    <div id="loginScreen" class="screen active">
+      <div class="login-header">
+        <i class="fas fa-shield-haltered logo-icon"></i>
+        <div class="app-title">TITIP ASRAMA</div>
+        <div class="app-subtitle">Presensi & Penitipan HP Digital</div>
+      </div>
+      <div class="login-form">
+        <div class="input-group">
+          <i class="fas fa-user"></i>
+          <input type="text" placeholder="ID Satgas" id="userIdInput" value="satgas01">
+        </div>
+        <div class="input-group">
+          <i class="fas fa-lock"></i>
+          <input type="password" placeholder="Kata Sandi" id="passInput" value="1234">
+        </div>
+        <button class="btn" onclick="login()"><i class="fas fa-arrow-right-to-bracket"></i> Masuk</button>
+        <p style="text-align:center;font-size:clamp(11px,2.5vw,13px);color:#8899aa;margin-top:8px;">Prototype • ketuk Masuk</p>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboardScreen" class="screen">
+      <div class="topbar">
+        <div class="greeting">👋 Halo, Satgas</div>
+        <div class="avatar"><i class="fas fa-user-shield"></i></div>
+      </div>
+      <div class="status-card">
+        <div class="stat-item"><div class="stat-number" id="countTitip">0</div><div class="stat-label">Sudah Titip</div></div>
+        <div class="stat-item"><div class="stat-number" id="countBelum">0</div><div class="stat-label">Belum Titip</div></div>
+      </div>
+      <!-- Kartu kelas (klik menuju detail) -->
+      <div class="kelas-grid">
+        <div class="kelas-card" onclick="showDetailKelas('10')">
+          <div class="kelas-label">Kelas 10</div>
+          <div class="kelas-progress"><span id="kelas10Titip">0</span>/<span id="kelas10Total">0</span></div>
+          <div class="kelas-total">titip</div>
+        </div>
+        <div class="kelas-card" onclick="showDetailKelas('11')">
+          <div class="kelas-label">Kelas 11</div>
+          <div class="kelas-progress"><span id="kelas11Titip">0</span>/<span id="kelas11Total">0</span></div>
+          <div class="kelas-total">titip</div>
+        </div>
+        <div class="kelas-card" onclick="showDetailKelas('12')">
+          <div class="kelas-label">Kelas 12</div>
+          <div class="kelas-progress"><span id="kelas12Titip">0</span>/<span id="kelas12Total">0</span></div>
+          <div class="kelas-total">titip</div>
+        </div>
+      </div>
+
+      <div class="menu-grid">
+        <div class="menu-card" onclick="goToScan('titip')">
+          <i class="fas fa-hand-holding"></i>
+          <div class="label">Titip HP</div>
+        </div>
+        <div class="menu-card" onclick="goToScan('ambil')">
+          <i class="fas fa-handshake"></i>
+          <div class="label">Ambil HP</div>
+        </div>
+        <div class="menu-card" onclick="switchTab('riwayat')">
+          <i class="fas fa-clock-rotate-left"></i>
+          <div class="label">Riwayat</div>
+        </div>
+      </div>
+      <div class="recent-activity">
+        <div class="recent-title">🕒 Aktivitas Terakhir</div>
+        <div id="recentList">
+          <div class="activity-item"><span>Belum ada aktivitas</span></div>
+        </div>
+      </div>
+      <!-- 🔔 TOMBOL Kirim Laporan ke Pembina -->
+      <button class="btn btn-laporan" onclick="konfirmasiKirimLaporan()">
+        <i class="fas fa-paper-plane"></i> Kirim Laporan ke Pembina
+      </button>
+      <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('dashboard')"><i class="fas fa-home"></i> Beranda</div>
+        <div class="nav-item" onclick="switchTab('riwayat')"><i class="fas fa-clock-rotate-left"></i> Riwayat</div>
+      </div>
+    </div>
+
+    <!-- DETAIL KELAS SCREEN -->
+    <div id="detailKelasScreen" class="screen">
+      <div class="detail-header">
+        <button class="btn-outline" style="padding:8px 16px;border-radius:20px;" onclick="goToDashboard()"><i class="fas fa-arrow-left"></i></button>
+        <span class="detail-title" id="detailKelasTitle">Kelas 10</span>
+      </div>
+      <ul class="santri-list" id="santriListContainer">
+        <!-- Diisi dinamis -->
+      </ul>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="goToDashboard()"><i class="fas fa-home"></i> Beranda</div>
+        <div class="nav-item" onclick="switchTab('riwayat')"><i class="fas fa-clock-rotate-left"></i> Riwayat</div>
+      </div>
+    </div>
+
+    <!-- SCAN -->
+    <div id="scanScreen" class="screen">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <button class="btn-outline" style="padding:8px 16px;border-radius:20px;" onclick="goToDashboard()"><i class="fas fa-arrow-left"></i></button>
+        <span style="font-weight:700;font-size:clamp(18px,5vw,22px);" id="scanTitle">Titip HP</span>
+      </div>
+      <div class="scan-area">
+        <div class="scan-frame">
+          <i class="fas fa-qrcode"></i>
+          <p style="margin-top:8px;font-size:clamp(13px,3vw,15px);">Arahkan kamera ke QR Code santri</p>
+        </div>
+        <button class="btn" style="background:#2c5f7e;margin-top:8px;" onclick="simulateScan()"><i class="fas fa-camera"></i> Simulasikan Scan</button>
+        <div class="manual-input">
+          <input type="text" placeholder="Atau ketik ID Santri manual" id="manualIdInput">
+          <button class="btn" style="padding:12px 16px;width:auto;" onclick="manualSubmit()">Cari</button>
+        </div>
+      </div>
+      <div id="resultBox" class="result-box">
+        <div style="display:flex;justify-content:space-between;font-weight:600;">
+          <span id="resultName">Nama Santri</span>
+          <span id="resultKamar">Kamar</span>
+        </div>
+        <div style="font-size:clamp(12px,3vw,14px);color:#4b6b7f;margin-top:4px;">
+          <span id="resultKelas">Kelas: -</span> • <span id="resultHp">HP: -</span>
+        </div>
+        <button id="confirmBtn" class="btn btn-success" style="margin-top:12px;" onclick="confirmAction()">✅ Konfirmasi Titip</button>
+      </div>
+    </div>
+
+    <!-- RIWAYAT (tanpa filter kelas) -->
+    <div id="riwayatScreen" class="screen">
+      <div class="riwayat-header">
+        <button class="btn-outline" style="padding:8px 16px;border-radius:20px;" onclick="goToDashboard()"><i class="fas fa-arrow-left"></i></button>
+        <span class="detail-title">📋 Riwayat Transaksi</span>
+      </div>
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="setFilterTipe('all', this)">Semua</button>
+        <button class="filter-btn" onclick="setFilterTipe('titip', this)">Titip</button>
+        <button class="filter-btn" onclick="setFilterTipe('ambil', this)">Ambil</button>
+      </div>
+      <ul class="log-list" id="logList">
+        <li>Belum ada transaksi</li>
+      </ul>
+      <div class="bottom-nav">
+        <div class="nav-item" onclick="goToDashboard()"><i class="fas fa-home"></i> Beranda</div>
+        <div class="nav-item active" onclick="switchTab('riwayat')"><i class="fas fa-clock-rotate-left"></i> Riwayat</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Database santri dengan kelas
+    const santriData = {
+      'S001': { nama: 'Ahmad Fauzi', kamar: 'A-12', hp: 'iPhone 13, Hitam', kelas: '10' },
+      'S002': { nama: 'Budi Santoso', kamar: 'A-15', hp: 'Samsung A54, Putih', kelas: '10' },
+      'S003': { nama: 'Citra Lestari', kamar: 'B-03', hp: 'Xiaomi 13T, Biru', kelas: '11' },
+      'S004': { nama: 'Dewi Anggraini', kamar: 'B-07', hp: 'Realme GT, Silver', kelas: '11' },
+      'S005': { nama: 'Eko Prasetyo', kamar: 'A-12', hp: 'iPhone 15 Pro, Natural', kelas: '12' },
+      'S006': { nama: 'Fani Maulida', kamar: 'B-12', hp: 'Oppo Reno, Hitam', kelas: '12' },
+      'S007': { nama: 'Gilang Ramadhan', kamar: 'A-20', hp: 'Vivo Y100, Biru', kelas: '10' },
+      'S008': { nama: 'Hani Susanti', kamar: 'B-21', hp: 'Samsung S24, Violet', kelas: '11' },
+      'S009': { nama: 'Indra Kusuma', kamar: 'A-30', hp: 'Pixel 8, Hitam', kelas: '12' }
+    };
+
+    let currentAction = 'titip';
+    let currentSantri = null;
+    let transactions = [];
+    let currentFilterTipe = 'all';
+
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      if (screenId === 'dashboardScreen') {
+        document.querySelectorAll('.nav-item')[0]?.classList.add('active');
+      } else if (screenId === 'riwayatScreen') {
+        document.querySelectorAll('.nav-item')[1]?.classList.add('active');
+      }
+    }
+
+    function login() {
+      showScreen('dashboardScreen');
+      updateDashboard();
+    }
+
+    function goToDashboard() {
+      showScreen('dashboardScreen');
+      updateDashboard();
+    }
+
+    function getSantriStatus(nama) {
+      const lastTx = transactions.find(t => t.id === nama);
+      if (!lastTx) return { status: 'belum', time: null };
+      if (lastTx.action === 'titip') return { status: 'sudah', time: lastTx.time };
+      return { status: 'belum', time: lastTx.time };
+    }
+
+    function showDetailKelas(kelas) {
+      showScreen('detailKelasScreen');
+      document.getElementById('detailKelasTitle').textContent = 'Kelas ' + kelas;
+
+      const santriKelas = Object.values(santriData).filter(s => s.kelas === kelas);
+      const listContainer = document.getElementById('santriListContainer');
+      if (santriKelas.length === 0) {
+        listContainer.innerHTML = '<li class="santri-item">Tidak ada santri di kelas ini.</li>';
+        return;
+      }
+
+      listContainer.innerHTML = santriKelas.map(s => {
+        const { status, time } = getSantriStatus(s.nama);
+        const iconClass = status === 'sudah' ? 'sudah' : 'belum';
+        const iconSymbol = status === 'sudah' ? '✅' : '❌';
+        const waktuText = status === 'sudah' ? `Titip pukul ${time}` : (time ? `Terakhir ambil ${time}` : 'Belum titip');
+        return `<li class="santri-item">
+                  <div class="status-icon ${iconClass}">${iconSymbol}</div>
+                  <div class="santri-info">
+                    <div class="santri-nama">${s.nama}</div>
+                    <div class="santri-detail">${s.kamar} • ${s.hp}</div>
+                  </div>
+                  <div class="santri-waktu">${waktuText}</div>
+                </li>`;
+      }).join('');
+    }
+
+    function goToScan(action) {
+      currentAction = action;
+      document.getElementById('scanTitle').textContent = action === 'titip' ? 'Titip HP' : 'Ambil HP';
+      const confirmBtn = document.getElementById('confirmBtn');
+      confirmBtn.textContent = action === 'titip' ? '✅ Konfirmasi Titip' : '✅ Konfirmasi Ambil';
+      confirmBtn.className = action === 'titip' ? 'btn btn-success' : 'btn';
+      confirmBtn.style.background = action === 'titip' ? '#0f6b3b' : '#1e4a6b';
+      document.getElementById('resultBox').classList.remove('show');
+      currentSantri = null;
+      showScreen('scanScreen');
+    }
+
+    function simulateScan() {
+      const ids = Object.keys(santriData);
+      const randomId = ids[Math.floor(Math.random() * ids.length)];
+      processSantriId(randomId);
+    }
+
+    function manualSubmit() {
+      const id = document.getElementById('manualIdInput').value.trim().toUpperCase();
+      if (santriData[id]) {
+        processSantriId(id);
+      } else {
+        alert('ID Santri tidak ditemukan.');
+      }
+    }
+
+    function processSantriId(id) {
+      currentSantri = santriData[id];
+      document.getElementById('resultName').textContent = currentSantri.nama;
+      document.getElementById('resultKamar').textContent = currentSantri.kamar;
+      document.getElementById('resultKelas').textContent = 'Kelas: ' + currentSantri.kelas;
+      document.getElementById('resultHp').textContent = 'HP: ' + currentSantri.hp;
+      document.getElementById('resultBox').classList.add('show');
+    }
+
+    function confirmAction() {
+      if (!currentSantri) {
+        alert('Scan atau pilih santri dulu.');
+        return;
+      }
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const dateStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+
+      transactions.unshift({
+        id: currentSantri.nama,
+        kamar: currentSantri.kamar,
+        kelas: currentSantri.kelas,
+        action: currentAction,
+        time: timeStr,
+        date: dateStr,
+        hp: currentSantri.hp
+      });
+
+      document.getElementById('resultBox').classList.remove('show');
+      currentSantri = null;
+
+      alert('✅ Transaksi ' + (currentAction === 'titip' ? 'Titip' : 'Ambil') + ' berhasil dicatat!');
+      setTimeout(() => goToDashboard(), 800);
+    }
+
+    function updateDashboard() {
+      const titipAll = transactions.filter(t => t.action === 'titip').length;
+      document.getElementById('countTitip').textContent = titipAll;
+      document.getElementById('countBelum').textContent = Object.keys(santriData).length - titipAll;
+
+      const totalPerKelas = { '10': 0, '11': 0, '12': 0 };
+      const titipPerKelas = { '10': 0, '11': 0, '12': 0 };
+
+      for (let id in santriData) {
+        const k = santriData[id].kelas;
+        totalPerKelas[k]++;
+      }
+      transactions.forEach(t => {
+        if (t.action === 'titip' && t.kelas) {
+          titipPerKelas[t.kelas]++;
+        }
+      });
+
+      document.getElementById('kelas10Titip').textContent = titipPerKelas['10'];
+      document.getElementById('kelas10Total').textContent = totalPerKelas['10'];
+      document.getElementById('kelas11Titip').textContent = titipPerKelas['11'];
+      document.getElementById('kelas11Total').textContent = totalPerKelas['11'];
+      document.getElementById('kelas12Titip').textContent = titipPerKelas['12'];
+      document.getElementById('kelas12Total').textContent = totalPerKelas['12'];
+
+      const recentDiv = document.getElementById('recentList');
+      if (transactions.length === 0) {
+        recentDiv.innerHTML = '<div class="activity-item"><span>Belum ada aktivitas</span></div>';
+      } else {
+        recentDiv.innerHTML = transactions.slice(0, 3).map(t =>
+          `<div class="activity-item"><span>${t.id} (Kls ${t.kelas})</span><span style="color:${t.action==='titip'?'#1e4a6b':'#0f6b3b'}">${t.action==='titip'?'📥 Titip':'📤 Ambil'} • ${t.time}</span></div>`
+        ).join('');
+      }
+      updateLogList();
+    }
+
+    function updateLogList() {
+      const list = document.getElementById('logList');
+      let filtered = transactions;
+      if (currentFilterTipe !== 'all') {
+        filtered = filtered.filter(t => t.action === currentFilterTipe);
+      }
+      if (filtered.length === 0) {
+        list.innerHTML = '<li>Tidak ada transaksi dengan filter ini.</li>';
+        return;
+      }
+      list.innerHTML = filtered.map(t =>
+        `<li>
+          <div class="log-icon ${t.action}"><i class="fas ${t.action==='titip'?'fa-arrow-down':'fa-arrow-up'}"></i></div>
+          <div style="flex:1;"><strong>${t.id}</strong><br><span style="font-size:0.8em;color:#6b7f8f;">Kls ${t.kelas} • ${t.kamar} • ${t.hp}</span></div>
+          <div style="text-align:right;"><span style="font-weight:600;color:${t.action==='titip'?'#1e4a6b':'#0f6b3b'}">${t.action==='titip'?'Titip':'Ambil'}</span><br><span style="font-size:0.75em;">${t.date}, ${t.time}</span></div>
+        </li>`
+      ).join('');
+    }
+
+    function setFilterTipe(tipe, element) {
+      currentFilterTipe = tipe;
+      document.querySelectorAll('.filter-row .filter-btn').forEach(b => b.classList.remove('active'));
+      element.classList.add('active');
+      updateLogList();
+    }
+
+    // ✅ Konfirmasi sebelum mengirim laporan
+    function konfirmasiKirimLaporan() {
+      const konfirmasi = confirm("Apakah Anda yakin ingin mengirim laporan ke Pembina?");
+      if (konfirmasi) {
+        kirimLaporan();
+      }
+    }
+
+    // Kirim Laporan ke Pembina (simulasi)
+    function kirimLaporan() {
+      const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+      const todayTx = transactions.filter(t => t.date === today);
+      
+      if (todayTx.length === 0) {
+        alert('Belum ada transaksi hari ini. Laporan tidak dapat dikirim.');
+        return;
+      }
+
+      const semuaNama = Object.values(santriData).map(s => s.nama);
+      const namaSudahTitip = [];
+      
+      semuaNama.forEach(nama => {
+        const lastTx = transactions.find(t => t.id === nama);
+        if (lastTx && lastTx.action === 'titip' && lastTx.date === today) {
+          namaSudahTitip.push(nama);
+        }
+      });
+
+      const belumTitip = semuaNama.filter(n => !namaSudahTitip.includes(n));
+      
+      const kelasRekap = { '10': { total: 0, titip: 0 }, '11': { total: 0, titip: 0 }, '12': { total: 0, titip: 0 } };
+      for (let id in santriData) {
+        const s = santriData[id];
+        kelasRekap[s.kelas].total++;
+        if (namaSudahTitip.includes(s.nama)) {
+          kelasRekap[s.kelas].titip++;
+        }
+      }
+
+      let laporan = `📋 Laporan Pengumpulan HP\n`;
+      laporan += `Tanggal: ${today}\n`;
+      laporan += `Dikirim oleh: Satgas\n\n`;
+      laporan += `✅ Sudah titip: ${namaSudahTitip.length} / ${semuaNama.length}\n`;
+      laporan += `❌ Belum titip: ${belumTitip.length}\n\n`;
+      laporan += `📊 Rincian per Kelas:\n`;
+      for (let k in kelasRekap) {
+        laporan += `• Kelas ${k}: ${kelasRekap[k].titip}/${kelasRekap[k].total}\n`;
+      }
+      if (belumTitip.length > 0) {
+        laporan += `\n⚠️ Nama yang belum titip:\n`;
+        belumTitip.forEach(n => laporan += `- ${n}\n`);
+      } else {
+        laporan += `\n🎉 Semua santri sudah titip!`;
+      }
+
+      alert(`[SIMULASI] Laporan berhasil dikirim ke Pembina!\n\n${laporan}`);
+      console.log('Laporan terkirim:', laporan);
+    }
+
+    function switchTab(tab) {
+      if (tab === 'dashboard') {
+        goToDashboard();
+      } else if (tab === 'riwayat') {
+        showScreen('riwayatScreen');
+        updateLogList();
+        document.querySelectorAll('.nav-item')[1]?.classList.add('active');
+      }
+    }
+  </script>
+</body>
+</html>
