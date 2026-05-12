@@ -364,7 +364,7 @@
       color: #1e4a6b;
     }
 
-    /* Riwayat */
+    /* Riwayat & filter */
     .riwayat-header {
       display: flex;
       align-items: center;
@@ -530,11 +530,17 @@
       </div>
     </div>
 
-    <!-- DETAIL KELAS SCREEN -->
+    <!-- DETAIL KELAS SCREEN (dengan filter) -->
     <div id="detailKelasScreen" class="screen">
       <div class="detail-header">
         <button class="btn-outline" style="padding:8px 16px;border-radius:20px;" onclick="goToDashboard()"><i class="fas fa-arrow-left"></i></button>
         <span class="detail-title" id="detailKelasTitle">Kelas 10</span>
+      </div>
+      <!-- Filter di detail kelas -->
+      <div class="filter-row" id="detailFilterRow">
+        <button class="filter-btn active" data-filter="all" onclick="setDetailFilter('all', this)">Semua</button>
+        <button class="filter-btn" data-filter="titip" onclick="setDetailFilter('titip', this)">Sudah Titip</button>
+        <button class="filter-btn" data-filter="belum" onclick="setDetailFilter('belum', this)">Belum Titip</button>
       </div>
       <ul class="santri-list" id="santriListContainer">
         <!-- Diisi dinamis -->
@@ -614,6 +620,10 @@
     let transactions = [];
     let currentFilterTipe = 'all';
 
+    // State untuk detail kelas
+    let currentDetailKelas = '';
+    let currentDetailFilter = 'all';
+
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
@@ -642,22 +652,38 @@
       return { status: 'belum', time: lastTx.time };
     }
 
-    function showDetailKelas(kelas) {
-      showScreen('detailKelasScreen');
-      document.getElementById('detailKelasTitle').textContent = 'Kelas ' + kelas;
-
-      const santriKelas = Object.values(santriData).filter(s => s.kelas === kelas);
+    // Render ulang daftar santri di detail kelas sesuai filter
+    function renderDetailKelas() {
+      const santriKelas = Object.values(santriData).filter(s => s.kelas === currentDetailKelas);
       const listContainer = document.getElementById('santriListContainer');
+      
       if (santriKelas.length === 0) {
         listContainer.innerHTML = '<li class="santri-item">Tidak ada santri di kelas ini.</li>';
         return;
       }
 
-      listContainer.innerHTML = santriKelas.map(s => {
+      // Proses data dengan status
+      let items = santriKelas.map(s => {
         const { status, time } = getSantriStatus(s.nama);
-        const iconClass = status === 'sudah' ? 'sudah' : 'belum';
-        const iconSymbol = status === 'sudah' ? '✅' : '❌';
-        const waktuText = status === 'sudah' ? `Titip pukul ${time}` : (time ? `Terakhir ambil ${time}` : 'Belum titip');
+        return { ...s, status, time };
+      });
+
+      // Terapkan filter
+      if (currentDetailFilter === 'titip') {
+        items = items.filter(s => s.status === 'sudah');
+      } else if (currentDetailFilter === 'belum') {
+        items = items.filter(s => s.status === 'belum');
+      }
+
+      if (items.length === 0) {
+        listContainer.innerHTML = '<li class="santri-item">Tidak ada santri sesuai filter.</li>';
+        return;
+      }
+
+      listContainer.innerHTML = items.map(s => {
+        const iconClass = s.status === 'sudah' ? 'sudah' : 'belum';
+        const iconSymbol = s.status === 'sudah' ? '✅' : '❌';
+        const waktuText = s.status === 'sudah' ? `Titip pukul ${s.time}` : (s.time ? `Terakhir ambil ${s.time}` : 'Belum titip');
         return `<li class="santri-item">
                   <div class="status-icon ${iconClass}">${iconSymbol}</div>
                   <div class="santri-info">
@@ -667,6 +693,31 @@
                   <div class="santri-waktu">${waktuText}</div>
                 </li>`;
       }).join('');
+    }
+
+    // Fungsi untuk mengubah filter di detail kelas
+    function setDetailFilter(filter, element) {
+      currentDetailFilter = filter;
+      // Update active class pada tombol filter
+      document.querySelectorAll('#detailFilterRow .filter-btn').forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+      renderDetailKelas();
+    }
+
+    // Fungsi showDetailKelas sekarang menginisialisasi state dan merender
+    function showDetailKelas(kelas) {
+      currentDetailKelas = kelas;
+      currentDetailFilter = 'all'; // reset filter
+      document.getElementById('detailKelasTitle').textContent = 'Kelas ' + kelas;
+      
+      // Reset tombol filter ke 'Semua'
+      document.querySelectorAll('#detailFilterRow .filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.filter === 'all') btn.classList.add('active');
+      });
+      
+      showScreen('detailKelasScreen');
+      renderDetailKelas();
     }
 
     function goToScan(action) {
@@ -788,7 +839,7 @@
 
     function setFilterTipe(tipe, element) {
       currentFilterTipe = tipe;
-      document.querySelectorAll('.filter-row .filter-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#riwayatScreen .filter-row .filter-btn').forEach(b => b.classList.remove('active'));
       element.classList.add('active');
       updateLogList();
     }
