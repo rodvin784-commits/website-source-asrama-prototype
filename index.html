@@ -321,13 +321,13 @@
       font-size: clamp(20px, 5vw, 24px);
       color: #0b2b3f;
     }
-    .santri-list {
+    .siswa-list {
       list-style: none;
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
-    .santri-item {
+    .siswa-item {
       display: flex;
       align-items: center;
       gap: 12px;
@@ -342,23 +342,23 @@
       text-align: center;
     }
     .status-icon.sudah {
-      color: #0f6b3b;  /* hijau centang */
+      color: #0f6b3b;
     }
     .status-icon.belum {
-      color: #b91c1c;  /* merah silang */
+      color: #b91c1c;
     }
-    .santri-info {
+    .siswa-info {
       flex: 1;
     }
-    .santri-nama {
+    .siswa-nama {
       font-weight: 600;
       font-size: clamp(14px, 3.5vw, 16px);
     }
-    .santri-detail {
+    .siswa-detail {
       font-size: 12px;
       color: #6b7f8f;
     }
-    .santri-waktu {
+    .siswa-waktu {
       font-size: 12px;
       font-weight: 500;
       color: #1e4a6b;
@@ -543,7 +543,7 @@
         <button class="filter-btn" data-filter="belum" onclick="setDetailFilter('belum', this)">Belum Titip</button>
         <button class="filter-btn" data-filter="ambil" onclick="setDetailFilter('ambil', this)">Sudah Ambil</button>
       </div>
-      <ul class="santri-list" id="santriListContainer">
+      <ul class="siswa-list" id="siswaListContainer">
         <!-- Diisi dinamis -->
       </ul>
       <div class="bottom-nav">
@@ -561,17 +561,17 @@
       <div class="scan-area">
         <div class="scan-frame">
           <i class="fas fa-qrcode"></i>
-          <p style="margin-top:8px;font-size:clamp(13px,3vw,15px);">Arahkan kamera ke QR Code santri</p>
+          <p style="margin-top:8px;font-size:clamp(13px,3vw,15px);">Arahkan kamera ke QR Code siswa</p>
         </div>
         <button class="btn" style="background:#2c5f7e;margin-top:8px;" onclick="simulateScan()"><i class="fas fa-camera"></i> Simulasikan Scan</button>
         <div class="manual-input">
-          <input type="text" placeholder="Atau ketik ID Santri manual" id="manualIdInput">
+          <input type="text" placeholder="Atau ketik ID Siswa manual" id="manualIdInput">
           <button class="btn" style="padding:12px 16px;width:auto;" onclick="manualSubmit()">Cari</button>
         </div>
       </div>
       <div id="resultBox" class="result-box">
         <div style="display:flex;justify-content:space-between;font-weight:600;">
-          <span id="resultName">Nama Santri</span>
+          <span id="resultName">Nama Siswa</span>
           <span id="resultKamar">Kamar</span>
         </div>
         <div style="font-size:clamp(12px,3vw,14px);color:#4b6b7f;margin-top:4px;">
@@ -603,8 +603,8 @@
   </div>
 
   <script>
-    // Database santri dengan kelas
-    const santriData = {
+    // Database siswa dengan kelas
+    const siswaData = {
       'S001': { nama: 'Ahmad Fauzi', kamar: 'A-12', hp: 'iPhone 13, Hitam', kelas: '10' },
       'S002': { nama: 'Budi Santoso', kamar: 'A-15', hp: 'Samsung A54, Putih', kelas: '10' },
       'S003': { nama: 'Citra Lestari', kamar: 'B-03', hp: 'Xiaomi 13T, Biru', kelas: '11' },
@@ -646,8 +646,8 @@
       updateDashboard();
     }
 
-    // Mendapatkan status terakhir: 'titip', 'ambil', atau 'belum'
-    function getSantriStatus(nama) {
+    // Mendapatkan status terakhir siswa
+    function getSiswaStatus(nama) {
       const lastTx = transactions.find(t => t.id === nama);
       if (!lastTx) return { status: 'belum', time: null, lastAction: null };
       return {
@@ -657,19 +657,19 @@
       };
     }
 
-    // Render ulang daftar santri di detail kelas sesuai filter
+    // Render ulang daftar siswa di detail kelas sesuai filter
     function renderDetailKelas() {
-      const santriKelas = Object.values(santriData).filter(s => s.kelas === currentDetailKelas);
-      const listContainer = document.getElementById('santriListContainer');
+      const siswaKelas = Object.values(siswaData).filter(s => s.kelas === currentDetailKelas);
+      const listContainer = document.getElementById('siswaListContainer');
       
-      if (santriKelas.length === 0) {
-        listContainer.innerHTML = '<li class="santri-item">Tidak ada santri di kelas ini.</li>';
+      if (siswaKelas.length === 0) {
+        listContainer.innerHTML = '<li class="siswa-item">Tidak ada siswa di kelas ini.</li>';
         return;
       }
 
       // Proses data dengan status
-      let items = santriKelas.map(s => {
-        const { status, time, lastAction } = getSantriStatus(s.nama);
+      let items = siswaKelas.map(s => {
+        const { status, time, lastAction } = getSiswaStatus(s.nama);
         return { ...s, status, time, lastAction };
       });
 
@@ -677,38 +677,38 @@
       if (currentDetailFilter === 'titip') {
         items = items.filter(s => s.status === 'titip');
       } else if (currentDetailFilter === 'belum') {
-        items = items.filter(s => s.status === 'belum'); // hanya yang benar-benar belum ada transaksi
+        items = items.filter(s => s.status === 'belum');
       } else if (currentDetailFilter === 'ambil') {
         items = items.filter(s => s.lastAction === 'ambil');
       }
 
       if (items.length === 0) {
-        listContainer.innerHTML = '<li class="santri-item">Tidak ada santri sesuai filter.</li>';
+        listContainer.innerHTML = '<li class="siswa-item">Tidak ada siswa sesuai filter.</li>';
         return;
       }
 
       listContainer.innerHTML = items.map(s => {
         let iconClass, iconSymbol, waktuText;
         if (s.status === 'titip') {
-          iconClass = 'sudah';  // centang hijau
+          iconClass = 'sudah';
           iconSymbol = '✅';
           waktuText = `Titip pukul ${s.time}`;
         } else if (s.lastAction === 'ambil') {
-          iconClass = 'sudah';  // centang hijau juga
+          iconClass = 'sudah';
           iconSymbol = '✅';
           waktuText = `Diambil pukul ${s.time}`;
         } else {
-          iconClass = 'belum';  // silang merah
+          iconClass = 'belum';
           iconSymbol = '❌';
           waktuText = 'Belum titip';
         }
-        return `<li class="santri-item">
+        return `<li class="siswa-item">
                   <div class="status-icon ${iconClass}">${iconSymbol}</div>
-                  <div class="santri-info">
-                    <div class="santri-nama">${s.nama}</div>
-                    <div class="santri-detail">${s.kamar} • ${s.hp}</div>
+                  <div class="siswa-info">
+                    <div class="siswa-nama">${s.nama}</div>
+                    <div class="siswa-detail">${s.kamar} • ${s.hp}</div>
                   </div>
-                  <div class="santri-waktu">${waktuText}</div>
+                  <div class="siswa-waktu">${waktuText}</div>
                 </li>`;
       }).join('');
     }
@@ -750,22 +750,22 @@
     }
 
     function simulateScan() {
-      const ids = Object.keys(santriData);
+      const ids = Object.keys(siswaData);
       const randomId = ids[Math.floor(Math.random() * ids.length)];
       processSantriId(randomId);
     }
 
     function manualSubmit() {
       const id = document.getElementById('manualIdInput').value.trim().toUpperCase();
-      if (santriData[id]) {
+      if (siswaData[id]) {
         processSantriId(id);
       } else {
-        alert('ID Santri tidak ditemukan.');
+        alert('ID Siswa tidak ditemukan.');
       }
     }
 
     function processSantriId(id) {
-      currentSantri = santriData[id];
+      currentSantri = siswaData[id];
       document.getElementById('resultName').textContent = currentSantri.nama;
       document.getElementById('resultKamar').textContent = currentSantri.kamar;
       document.getElementById('resultKelas').textContent = 'Kelas: ' + currentSantri.kelas;
@@ -775,7 +775,7 @@
 
     function confirmAction() {
       if (!currentSantri) {
-        alert('Scan atau pilih santri dulu.');
+        alert('Scan atau pilih siswa dulu.');
         return;
       }
       const now = new Date();
@@ -802,13 +802,13 @@
     function updateDashboard() {
       const titipAll = transactions.filter(t => t.action === 'titip').length;
       document.getElementById('countTitip').textContent = titipAll;
-      document.getElementById('countBelum').textContent = Object.keys(santriData).length - titipAll;
+      document.getElementById('countBelum').textContent = Object.keys(siswaData).length - titipAll;
 
       const totalPerKelas = { '10': 0, '11': 0, '12': 0 };
       const titipPerKelas = { '10': 0, '11': 0, '12': 0 };
 
-      for (let id in santriData) {
-        const k = santriData[id].kelas;
+      for (let id in siswaData) {
+        const k = siswaData[id].kelas;
         totalPerKelas[k]++;
       }
       transactions.forEach(t => {
@@ -879,7 +879,7 @@
         return;
       }
 
-      const semuaNama = Object.values(santriData).map(s => s.nama);
+      const semuaNama = Object.values(siswaData).map(s => s.nama);
       const namaSudahTitip = [];
       
       semuaNama.forEach(nama => {
@@ -892,8 +892,8 @@
       const belumTitip = semuaNama.filter(n => !namaSudahTitip.includes(n));
       
       const kelasRekap = { '10': { total: 0, titip: 0 }, '11': { total: 0, titip: 0 }, '12': { total: 0, titip: 0 } };
-      for (let id in santriData) {
-        const s = santriData[id];
+      for (let id in siswaData) {
+        const s = siswaData[id];
         kelasRekap[s.kelas].total++;
         if (namaSudahTitip.includes(s.nama)) {
           kelasRekap[s.kelas].titip++;
@@ -913,7 +913,7 @@
         laporan += `\n⚠️ Nama yang belum titip:\n`;
         belumTitip.forEach(n => laporan += `- ${n}\n`);
       } else {
-        laporan += `\n🎉 Semua santri sudah titip!`;
+        laporan += `\n🎉 Semua siswa sudah titip!`;
       }
 
       alert(`[SIMULASI] Laporan berhasil dikirim ke Pembina!\n\n${laporan}`);
