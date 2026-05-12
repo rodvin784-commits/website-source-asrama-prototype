@@ -342,13 +342,10 @@
       text-align: center;
     }
     .status-icon.sudah {
-      color: #0f6b3b;
+      color: #0f6b3b;  /* hijau centang */
     }
     .status-icon.belum {
-      color: #b91c1c;
-    }
-    .status-icon.ambil {
-      color: #f59e0b;
+      color: #b91c1c;  /* merah silang */
     }
     .santri-info {
       flex: 1;
@@ -533,7 +530,7 @@
       </div>
     </div>
 
-    <!-- DETAIL KELAS SCREEN (dengan filter ditambah "Sudah Ambil") -->
+    <!-- DETAIL KELAS SCREEN (dengan filter) -->
     <div id="detailKelasScreen" class="screen">
       <div class="detail-header">
         <button class="btn-outline" style="padding:8px 16px;border-radius:20px;" onclick="goToDashboard()"><i class="fas fa-arrow-left"></i></button>
@@ -649,7 +646,7 @@
       updateDashboard();
     }
 
-    // Mendapatkan status terakhir: 'titip', 'ambil', atau 'belum' (tidak ada transaksi)
+    // Mendapatkan status terakhir: 'titip', 'ambil', atau 'belum'
     function getSantriStatus(nama) {
       const lastTx = transactions.find(t => t.id === nama);
       if (!lastTx) return { status: 'belum', time: null, lastAction: null };
@@ -680,7 +677,7 @@
       if (currentDetailFilter === 'titip') {
         items = items.filter(s => s.status === 'titip');
       } else if (currentDetailFilter === 'belum') {
-        items = items.filter(s => s.status !== 'titip'); // termasuk 'ambil' dan 'belum'
+        items = items.filter(s => s.status === 'belum'); // hanya yang benar-benar belum ada transaksi
       } else if (currentDetailFilter === 'ambil') {
         items = items.filter(s => s.lastAction === 'ambil');
       }
@@ -693,17 +690,17 @@
       listContainer.innerHTML = items.map(s => {
         let iconClass, iconSymbol, waktuText;
         if (s.status === 'titip') {
-          iconClass = 'sudah';
+          iconClass = 'sudah';  // centang hijau
           iconSymbol = '✅';
           waktuText = `Titip pukul ${s.time}`;
         } else if (s.lastAction === 'ambil') {
-          iconClass = 'ambil';
-          iconSymbol = '🔄';
+          iconClass = 'sudah';  // centang hijau juga
+          iconSymbol = '✅';
           waktuText = `Diambil pukul ${s.time}`;
         } else {
-          iconClass = 'belum';
+          iconClass = 'belum';  // silang merah
           iconSymbol = '❌';
-          waktuText = 'Belum ada transaksi';
+          waktuText = 'Belum titip';
         }
         return `<li class="santri-item">
                   <div class="status-icon ${iconClass}">${iconSymbol}</div>
