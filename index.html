@@ -347,6 +347,9 @@
     .status-icon.belum {
       color: #b91c1c;
     }
+    .status-icon.ambil {
+      color: #f59e0b;
+    }
     .santri-info {
       flex: 1;
     }
@@ -530,7 +533,7 @@
       </div>
     </div>
 
-    <!-- DETAIL KELAS SCREEN (dengan filter) -->
+    <!-- DETAIL KELAS SCREEN (dengan filter ditambah "Sudah Ambil") -->
     <div id="detailKelasScreen" class="screen">
       <div class="detail-header">
         <button class="btn-outline" style="padding:8px 16px;border-radius:20px;" onclick="goToDashboard()"><i class="fas fa-arrow-left"></i></button>
@@ -541,6 +544,7 @@
         <button class="filter-btn active" data-filter="all" onclick="setDetailFilter('all', this)">Semua</button>
         <button class="filter-btn" data-filter="titip" onclick="setDetailFilter('titip', this)">Sudah Titip</button>
         <button class="filter-btn" data-filter="belum" onclick="setDetailFilter('belum', this)">Belum Titip</button>
+        <button class="filter-btn" data-filter="ambil" onclick="setDetailFilter('ambil', this)">Sudah Ambil</button>
       </div>
       <ul class="santri-list" id="santriListContainer">
         <!-- Diisi dinamis -->
@@ -645,11 +649,15 @@
       updateDashboard();
     }
 
+    // Mendapatkan status terakhir: 'titip', 'ambil', atau 'belum' (tidak ada transaksi)
     function getSantriStatus(nama) {
       const lastTx = transactions.find(t => t.id === nama);
-      if (!lastTx) return { status: 'belum', time: null };
-      if (lastTx.action === 'titip') return { status: 'sudah', time: lastTx.time };
-      return { status: 'belum', time: lastTx.time };
+      if (!lastTx) return { status: 'belum', time: null, lastAction: null };
+      return {
+        status: lastTx.action === 'titip' ? 'titip' : 'ambil',
+        time: lastTx.time,
+        lastAction: lastTx.action
+      };
     }
 
     // Render ulang daftar santri di detail kelas sesuai filter
@@ -664,15 +672,17 @@
 
       // Proses data dengan status
       let items = santriKelas.map(s => {
-        const { status, time } = getSantriStatus(s.nama);
-        return { ...s, status, time };
+        const { status, time, lastAction } = getSantriStatus(s.nama);
+        return { ...s, status, time, lastAction };
       });
 
       // Terapkan filter
       if (currentDetailFilter === 'titip') {
-        items = items.filter(s => s.status === 'sudah');
+        items = items.filter(s => s.status === 'titip');
       } else if (currentDetailFilter === 'belum') {
-        items = items.filter(s => s.status === 'belum');
+        items = items.filter(s => s.status !== 'titip'); // termasuk 'ambil' dan 'belum'
+      } else if (currentDetailFilter === 'ambil') {
+        items = items.filter(s => s.lastAction === 'ambil');
       }
 
       if (items.length === 0) {
@@ -681,9 +691,20 @@
       }
 
       listContainer.innerHTML = items.map(s => {
-        const iconClass = s.status === 'sudah' ? 'sudah' : 'belum';
-        const iconSymbol = s.status === 'sudah' ? '✅' : '❌';
-        const waktuText = s.status === 'sudah' ? `Titip pukul ${s.time}` : (s.time ? `Terakhir ambil ${s.time}` : 'Belum titip');
+        let iconClass, iconSymbol, waktuText;
+        if (s.status === 'titip') {
+          iconClass = 'sudah';
+          iconSymbol = '✅';
+          waktuText = `Titip pukul ${s.time}`;
+        } else if (s.lastAction === 'ambil') {
+          iconClass = 'ambil';
+          iconSymbol = '🔄';
+          waktuText = `Diambil pukul ${s.time}`;
+        } else {
+          iconClass = 'belum';
+          iconSymbol = '❌';
+          waktuText = 'Belum ada transaksi';
+        }
         return `<li class="santri-item">
                   <div class="status-icon ${iconClass}">${iconSymbol}</div>
                   <div class="santri-info">
@@ -698,7 +719,6 @@
     // Fungsi untuk mengubah filter di detail kelas
     function setDetailFilter(filter, element) {
       currentDetailFilter = filter;
-      // Update active class pada tombol filter
       document.querySelectorAll('#detailFilterRow .filter-btn').forEach(btn => btn.classList.remove('active'));
       element.classList.add('active');
       renderDetailKelas();
