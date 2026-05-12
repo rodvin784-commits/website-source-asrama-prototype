@@ -342,10 +342,13 @@
       text-align: center;
     }
     .status-icon.sudah {
-      color: #0f6b3b;
+      color: #0f6b3b;  /* hijau centang */
     }
     .status-icon.belum {
-      color: #b91c1c;
+      color: #b91c1c;  /* merah silang */
+    }
+    .status-icon.putar {
+      color: #2563eb;  /* biru panah berputar */
     }
     .siswa-info {
       flex: 1;
@@ -690,15 +693,15 @@
       listContainer.innerHTML = items.map(s => {
         let iconClass, iconSymbol, waktuText;
         if (s.status === 'titip') {
-          iconClass = 'sudah';
+          iconClass = 'sudah';  // centang hijau
           iconSymbol = '✅';
           waktuText = `Titip pukul ${s.time}`;
         } else if (s.lastAction === 'ambil') {
-          iconClass = 'sudah';
-          iconSymbol = '✅';
+          iconClass = 'putar';  // panah berputar biru
+          iconSymbol = '🔄';
           waktuText = `Diambil pukul ${s.time}`;
         } else {
-          iconClass = 'belum';
+          iconClass = 'belum';  // silang merah
           iconSymbol = '❌';
           waktuText = 'Belum titip';
         }
